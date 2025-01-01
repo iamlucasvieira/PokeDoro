@@ -1,0 +1,14 @@
+
+
+  VITE v6.0.6  ready in 242 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  Vue DevTools: Open http://localhost:5173/__devtools__/ as a separate window
+  ➜  Vue DevTools: Press Option(⌥)+Shift(⇧)+D in App to toggle the Vue DevTools
+
+  ➜  press h + enter to show help
+[vite:css] /Users/lucas/dev/pokedoro/src/assets/base.css is empty
+1  |  @import './base.css';
+   |  ^^^^^^^^^^^^^^^^^^^^^
+2  |  
