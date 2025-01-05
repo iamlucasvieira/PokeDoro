@@ -58,7 +58,7 @@
             Complete pomodoros, find Pokémons.
           </p>
         </div>
-        <div class="mt-10 flex gap-x-6">
+        <div class="mt-10 w-full">
           <RouterView />
         </div>
       </div>
