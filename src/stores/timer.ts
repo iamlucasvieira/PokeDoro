@@ -1,9 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { usePomodoroCountStore } from './pomodoroCount'
+import { usePokemonStore } from './pokemon'
+import { useToast } from 'vue-toastification'
 
 export const useTimerStore = defineStore('timer', () => {
   // State
-  const timeLeft = ref(25 * 60) // 25 minutes in seconds
+  const timeLeft = ref(getNextTimer()) // 25 minutes in seconds
   const isRunning = ref(false)
   const timerInterval = ref<number | null>(null)
 
@@ -15,6 +18,33 @@ export const useTimerStore = defineStore('timer', () => {
   })
 
   // Actions
+  async function handleTimerComplete() {
+    const pomodoroCount = usePomodoroCountStore()
+    const pokemonStore = usePokemonStore()
+    const toast = useToast()
+
+    pomodoroCount.increment()
+    try {
+      const pokemon = await pokemonStore.getNewPokemon()
+      timeLeft.value = getNextTimer()
+      toast.success(`${pokemon.name} has been added to your collection!`, {
+        title: 'New Pokémon!',
+      })
+    } catch (error) {
+      console.error('Failed to award Pokémon:', error)
+    }
+  }
+
+  function getNextTimer() {
+    const pomodoroCount = usePomodoroCountStore()
+    const count = pomodoroCount.pomodoroCount
+    if ((count + 1) % 4 === 0) {
+      return 15 * 60 // Long break after 4 pomodoros
+    } else {
+      return count % 2 === 0 ? 25 * 60 : 5 * 60 // Alternate work/short break
+    }
+  }
+
   function startTimer() {
     if (!isRunning.value) {
       isRunning.value = true
@@ -23,6 +53,7 @@ export const useTimerStore = defineStore('timer', () => {
           timeLeft.value--
         } else {
           stopTimer()
+          handleTimerComplete()
         }
       }, 1000)
     }

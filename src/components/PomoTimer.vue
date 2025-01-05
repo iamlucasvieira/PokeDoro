@@ -3,8 +3,7 @@
     <div class="display">{{ timer.displayTime }}</div>
 
     <div class="controls">
-      <button @click="timer.startTimer()" :disabled="timer.isRunning">Play</button>
-
+      <button @click="startTimer()" :disabled="timer.isRunning">Play</button>
       <button @click="timer.stopTimer()" :disabled="!timer.isRunning">Stop</button>
     </div>
 
@@ -17,17 +16,23 @@
 
 <script lang="ts">
 import { useTimerStore } from '@/stores/timer'
+import { usePomodoroCountStore } from '@/stores/pomodoroCount'
 
 export default {
   data() {
     return {
       minutes: 25,
       timer: useTimerStore(),
+      pomodoroCount: usePomodoroCountStore(),
     }
   },
   methods: {
     setNewTimer() {
       this.timer.setTimer(this.minutes)
+    },
+
+    startTimer() {
+      this.timer.startTimer()
     },
   },
 }
