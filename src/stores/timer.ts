@@ -2,11 +2,14 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { usePomodoroCountStore } from './pomodoroCount'
 import { usePokemonStore } from './pokemon'
+import { useSessionStore, SessionType } from './sessionStore'
 import { useToast } from 'vue-toastification'
 
 export const useTimerStore = defineStore('timer', () => {
+  const sessionStore = useSessionStore()
+
   // State
-  const timeLeft = ref(getNextTimer()) // 25 minutes in seconds
+  const timeLeft = ref(sessionStore.sessionConfig.duration * 60)
   const isRunning = ref(false)
   const timerInterval = ref<number | null>(null)
 
@@ -23,26 +26,23 @@ export const useTimerStore = defineStore('timer', () => {
     const pokemonStore = usePokemonStore()
     const toast = useToast()
 
-    pomodoroCount.increment()
-    try {
-      const pokemon = await pokemonStore.getNewPokemon()
-      timeLeft.value = getNextTimer()
-      toast.success(`${pokemon.name} has been added to your collection!`, {
-        title: 'New Pokémon!',
-      })
-    } catch (error) {
-      console.error('Failed to award Pokémon:', error)
+    // Only award Pokemon and increment count after focus sessions
+    if (sessionStore.currentSession === SessionType.FOCUS) {
+      pomodoroCount.increment()
+      try {
+        const pokemon = await pokemonStore.getNewPokemon()
+        toast.success(`${pokemon.name} has been added to your collection!`, {
+          title: 'New Pokémon!',
+        })
+      } catch (error) {
+        console.error('Failed to award Pokémon:', error)
+      }
     }
-  }
 
-  function getNextTimer() {
-    const pomodoroCount = usePomodoroCountStore()
-    const count = pomodoroCount.pomodoroCount
-    if ((count + 1) % 4 === 0) {
-      return 15 * 60 // Long break after 4 pomodoros
-    } else {
-      return count % 2 === 0 ? 25 * 60 : 5 * 60 // Alternate work/short break
-    }
+    // Set next session type and timer
+    const nextSession = sessionStore.getNextSession()
+    sessionStore.setSession(nextSession)
+    timeLeft.value = sessionStore.sessionConfig.duration * 60
   }
 
   function startTimer() {
